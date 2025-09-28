@@ -1,4 +1,4 @@
-# 이미지 파일이 많아 github 에 올릴 수 없음
+# CIFAR-10 데이터셋에 이미지 파일이 많아 github 에 올릴 수 없음
 # 이미지 파일들을 npy 파일로 변환하는 코드
 import numpy as np
 import pandas as pd
