@@ -23,21 +23,17 @@ train_data /= 1e8  # 100000000 (1억) 으로 나눠서 숫자 작게 하기
 
 # 2차식으로 선형회귀
 poly = PolynomialFeatures(degree=2)
-x_train_poly = poly.fit_transform(np.array(list(map(int, train_cols))).reshape(-1, 1))
-x_test_poly = poly.transform(np.array(list(map(int, target_cols))).reshape(-1, 1))
+train_poly = poly.fit_transform(np.array(list(map(int, train_cols))).reshape(-1, 1))
+test_poly = poly.transform(np.array(list(map(int, target_cols))).reshape(-1, 1))
 
 model = LinearRegression()
 model.fit(
-    x_train_poly,
+    train_poly,
     train_data[train_cols].values.reshape(-1, 1),
 )
-gdp_predict = model.predict(x_test_poly)
-
+gdp_predict = model.predict(test_poly)
 
 # 그래프로 결과 시각화
-
-# 2011년까지 학습 데이터로 표시하여 학습 데이터와 실제 데이터의 그래프가 끊기지 않게 하기
-train_cols.append("2011")
 
 # 모델 평가
 print(
@@ -53,6 +49,6 @@ plt.plot(target_cols, train_data[target_cols].values.flatten())
 plt.plot(target_cols, gdp_predict)
 plt.legend(("학습 데이터", "실제 데이터", "예측 데이터"))
 plt.xticks(rotation=90)
-plt.xlabel("Year")
+plt.xlabel("년도")
 plt.ylabel("GDP (억 $)")
 plt.show()
