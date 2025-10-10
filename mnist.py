@@ -1,14 +1,10 @@
-import pandas as pd
 import numpy as np
 
 import struct
 from array import array
 from os.path import join
 
-from tensorflow.python import keras
-from keras import layers, models
-
-import matplotlib.pyplot as plt
+import tensorflow as tf
 
 
 # https://www.kaggle.com/code/hojjatk/read-mnist-dataset
@@ -72,3 +68,24 @@ dataloader = MnistDataloader(
     train_image_path, train_label_path, test_image_path, test_label_path
 )
 (x_train, y_train), (x_test, y_test) = dataloader.load_data()
+
+model = tf.keras.Sequential()
+model.add(
+    tf.keras.layers.Conv2D(32, (3, 3), activation="relu", input_shape=(28, 28, 1))
+)
+model.add(tf.keras.layers.MaxPooling2D((2, 2)))
+model.add(tf.keras.layers.Conv2D(64, (3, 3), activation="relu"))
+model.add(tf.keras.layers.MaxPooling2D((2, 2)))
+model.add(tf.keras.layers.Conv2D(64, (3, 3), activation="relu"))
+model.add(tf.keras.layers.Flatten())
+model.add(tf.keras.layers.Dense(64, activation="relu"))
+model.add(tf.keras.layers.Dense(10, activation="softmax"))
+
+model.compile(
+    loss="sparse_categorical_crossentropy",
+    optimizer="adam",
+    metrics=["accuracy"],
+)
+
+model.fit(x_train, y_train, epochs=5, verbose=2)
+model.evaluate(x_test, y_test, verbose=2)
