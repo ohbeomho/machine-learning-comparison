@@ -1,10 +1,10 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 
 # 결측치 없음
-diabetes_data = pd.read_csv("./diabetes/diabetes_012_health_indicators_BRFSS2015.csv")
-target_col = "Diabetes_012"  # 예측할 데이터
+diabetes_data = pd.read_csv(
+    "./diabetes/diabetes_binary_health_indicators_BRFSS2015.csv"
+)
+target_col = "Diabetes_binary"  # 예측할 데이터
 data_cols = [
     "HighBP",
     "HighChol",
@@ -25,17 +25,35 @@ y = diabetes_data[target_col]
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
+import pickle
 
 # random_state를 지정하여 실행할 때마다 같은 결과가 나오도록 함
 x_train, x_test, y_train, y_test = train_test_split(
     x, y, test_size=0.3, random_state=42
 )
 
-print(x_train.shape, x_test.shape, y_train.shape, y_test.shape)
-
 # K를 5로 설정
-model = KNeighborsClassifier(n_neighbors=5)
-model.fit(x_train, y_train)
-y_pred = model.predict(x_test)
+model_1 = KNeighborsClassifier(n_neighbors=5)
+model_1.fit(x_train, y_train)
+y_pred = model_1.predict(x_test)
+
+# pickle을 이용하여 모델 저장
+pickle.dump(model_1, open("diabetes_model.pkl", "wb"))
 
 print("Accuracy: ", accuracy_score(y_test, y_pred))
+
+# 딥러닝
+import keras
+
+model_2 = keras.Sequential()
+model_2.add(keras.layers.Dense(64, activation="relu", input_shape=(6,)))
+model_2.add(keras.layers.Dense(64, activation="relu"))
+model_2.add(keras.layers.Dense(1, activation="sigmoid"))
+
+model_2.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
+
+model_2.fit(x_train, y_train, epochs=5)
+model_2.evaluate(x_test, y_test)
+
+# 모델 저장
+model_2.save("diabetes_model.keras")
