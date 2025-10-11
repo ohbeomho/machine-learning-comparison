@@ -4,7 +4,9 @@ import struct
 from array import array
 from os.path import join
 
-import tensorflow as tf
+import keras
+
+from sklearn import svm
 
 
 # https://www.kaggle.com/code/hojjatk/read-mnist-dataset
@@ -46,7 +48,7 @@ class MnistDataloader(object):
             img = img.reshape(28, 28)
             images[i][:] = img
 
-        return images, labels
+        return np.array(images), np.array(labels)
 
     def load_data(self):
         x_train, y_train = self.read_images_labels(
@@ -69,23 +71,23 @@ dataloader = MnistDataloader(
 )
 (x_train, y_train), (x_test, y_test) = dataloader.load_data()
 
-model = tf.keras.Sequential()
-model.add(
-    tf.keras.layers.Conv2D(32, (3, 3), activation="relu", input_shape=(28, 28, 1))
-)
-model.add(tf.keras.layers.MaxPooling2D((2, 2)))
-model.add(tf.keras.layers.Conv2D(64, (3, 3), activation="relu"))
-model.add(tf.keras.layers.MaxPooling2D((2, 2)))
-model.add(tf.keras.layers.Conv2D(64, (3, 3), activation="relu"))
-model.add(tf.keras.layers.Flatten())
-model.add(tf.keras.layers.Dense(64, activation="relu"))
-model.add(tf.keras.layers.Dense(10, activation="softmax"))
+# model_1 -> SVM
 
-model.compile(
+model_2 = keras.Sequential()
+model_2.add(keras.layers.Conv2D(32, (3, 3), activation="relu", input_shape=(28, 28, 1)))
+model_2.add(keras.layers.MaxPooling2D((2, 2)))
+model_2.add(keras.layers.Conv2D(64, (3, 3), activation="relu"))
+model_2.add(keras.layers.MaxPooling2D((2, 2)))
+model_2.add(keras.layers.Conv2D(64, (3, 3), activation="relu"))
+model_2.add(keras.layers.Flatten())
+model_2.add(keras.layers.Dense(64, activation="relu"))
+model_2.add(keras.layers.Dense(10, activation="softmax"))
+
+model_2.compile(
     loss="sparse_categorical_crossentropy",
     optimizer="adam",
     metrics=["accuracy"],
 )
 
-model.fit(x_train, y_train, epochs=5, verbose=2)
-model.evaluate(x_test, y_test, verbose=2)
+model_2.fit(x_train, y_train, epochs=5)
+model_2.evaluate(x_test, y_test)
