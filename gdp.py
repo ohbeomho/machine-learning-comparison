@@ -37,19 +37,17 @@ x_test_poly = poly.transform(x_test)
 model_1 = LinearRegression()
 model_1.fit(x_train_poly, y_train)
 
-gdp_predict_1 = model_1.predict(x_test_poly)
+y_pred_1 = model_1.predict(x_test_poly)
 pickle.dump(model_1, open("gdp_model.pkl", "wb"))
 
 # 모델 평가
 print("전통적인 머신러닝 평가")
-print(
-    "MSE: ", mean_squared_error(train_data[target_cols].values.flatten(), gdp_predict_1)
-)
+print("MSE: ", mean_squared_error(y_test.flatten(), y_pred_1))
 print(
     "MAE: ",
-    mean_absolute_error(train_data[target_cols].values.flatten(), gdp_predict_1),
+    mean_absolute_error(y_test.flatten(), y_pred_1),
 )
-print("R2: ", r2_score(train_data[target_cols].values.flatten(), gdp_predict_1), "\n")
+print("R2: ", r2_score(y_test.flatten(), y_pred_1), "\n")
 
 model_2 = keras.Sequential()
 model_2.add(keras.layers.Dense(64, activation="relu", input_shape=(1,)))
@@ -60,24 +58,22 @@ model_2.compile(loss="mse", optimizer="adam", metrics=["mse"])
 
 model_2.fit(x_train, y_train, epochs=5)
 
-gdp_predict_2 = model_2.predict(x_test)
+y_pred_2 = model_2.predict(x_test)
 model_2.save("gdp_model.keras")
 
 print("딥러닝 모델 평가")
-print(
-    "MSE: ", mean_squared_error(train_data[target_cols].values.flatten(), gdp_predict_2)
-)
+print("MSE: ", mean_squared_error(y_test.flatten(), y_pred_2))
 print(
     "MAE: ",
-    mean_absolute_error(train_data[target_cols].values.flatten(), gdp_predict_2),
+    mean_absolute_error(y_test.flatten(), y_pred_2),
 )
-print("R2: ", r2_score(train_data[target_cols].values.flatten(), gdp_predict_2))
+print("R2: ", r2_score(y_test.flatten(), y_pred_2))
 
 # 그래프로 결과 시각화
 plt.plot(train_cols, train_data[train_cols].values.flatten())
-plt.plot(target_cols, train_data[target_cols].values.flatten())
-plt.plot(target_cols, gdp_predict_1)
-plt.plot(target_cols, gdp_predict_2)
+plt.plot(target_cols, y_test.flatten())
+plt.plot(target_cols, y_pred_1)
+plt.plot(target_cols, y_pred_2)
 plt.legend(("학습 데이터", "실제 데이터", "머신러닝 예측 데이터", "딥러닝 예측 데이터"))
 plt.xticks(rotation=90)
 plt.xlabel("년도")

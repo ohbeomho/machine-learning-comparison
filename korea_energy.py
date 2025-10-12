@@ -3,8 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 import koreanize_matplotlib
+
+import pickle
+
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+
+import keras
 
 # 결측치 없음
 # 총 에너지 사용량만 사용
@@ -29,23 +34,44 @@ for i in range(2015, 2022):
 
 target_cols.pop()
 
-model = LinearRegression()
-model.fit(
-    np.array(list(map(int, train_cols))).reshape(-1, 1),
-    energy_data[train_cols].tolist(),
-)
+x_train = np.array(list(map(int, train_cols))).reshape(-1, 1)
+y_train = np.array(energy_data[train_cols])
+x_test = np.array(list(map(int, target_cols))).reshape(-1, 1)
+y_test = np.array(energy_data[target_cols])
 
-energy_predict = model.predict(np.array(list(map(int, target_cols))).reshape(-1, 1))
+model_1 = LinearRegression()
+model_1.fit(x_train, y_train)
 
+y_pred_1 = model_1.predict(x_test)
+pickle.dump(model_1, open("korea_energy_model.pkl", "wb"))
+
+model_2 = keras.Sequential()
+model_2.add(keras.layers.Dense(64, activation="relu", input_shape=(1,)))
+model_2.add(keras.layers.Dense(64, activation="relu"))
+model_2.add(keras.layers.Dense(1))
+
+model_2.compile(loss="mse", optimizer="adam", metrics=["mse"])
+
+model_2.fit(x_train, y_train, epochs=5)
+y_pred_2 = model_2.predict(x_test)
+
+model_2.save("korea_energy_model.keras")
+
+print("전통적인 머신러닝 모델 평가")
 print(
     "MSE: ",
-    mean_squared_error(energy_data[target_cols].tolist(), energy_predict),
+    mean_squared_error(y_test, y_pred_1),
 )
 print(
     "MAE: ",
-    mean_absolute_error(energy_data[target_cols].tolist(), energy_predict),
+    mean_absolute_error(y_test, y_pred_1),
 )
-print("R2: ", r2_score(energy_data[target_cols].tolist(), energy_predict))
+print("R2: ", r2_score(y_test, y_pred_1), "\n")
+
+print("딥러닝 모델 평가")
+print("MSE: ", mean_squared_error(y_test, y_pred_2))
+print("MAE: ", mean_absolute_error(y_test, y_pred_2))
+print("R2: ", r2_score(y_test, y_pred_2))
 
 ax = plt.axes()
 ax.xaxis.set_major_locator(tkr.MultipleLocator(12))
@@ -54,14 +80,15 @@ ax.yaxis.set_major_locator(tkr.MultipleLocator(1000))
 ax.yaxis.set_minor_locator(tkr.MultipleLocator(100))
 
 ax.plot(train_cols, energy_data[train_cols].tolist())
-ax.plot(target_cols, energy_data[target_cols].tolist())
-ax.plot(target_cols, energy_predict)
+ax.plot(target_cols, y_test)
+ax.plot(target_cols, y_pred_1)
+ax.plot(target_cols, y_pred_2)
 
-ax.legend(("학습 데이터", "실제 데이터", "예측 데이터"))
+ax.legend(("학습 데이터", "실제 데이터", "머신러닝 예측 데이터", "딥러닝 예측 데이터"))
 ax.tick_params(axis="x", rotation=90)
 ax.grid(axis="x")
 
-plt.xlabel("Year")
-plt.ylabel("Energy Usage (1000 toe)")
+plt.xlabel("날짜")
+plt.ylabel("에너지 사용량 (1000 toe)")
 
 plt.show()
