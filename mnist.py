@@ -2,7 +2,7 @@ import numpy as np
 
 import struct
 from array import array
-from os.path import join
+from os.path import join, isfile
 
 import keras
 
@@ -73,15 +73,27 @@ dataloader = MnistDataloader(
 
 # model_1 -> SVM
 
-model_2 = keras.Sequential()
-model_2.add(keras.layers.Conv2D(32, (3, 3), activation="relu", input_shape=(28, 28, 1)))
-model_2.add(keras.layers.MaxPooling2D((2, 2)))
-model_2.add(keras.layers.Conv2D(64, (3, 3), activation="relu"))
-model_2.add(keras.layers.MaxPooling2D((2, 2)))
-model_2.add(keras.layers.Conv2D(64, (3, 3), activation="relu"))
-model_2.add(keras.layers.Flatten())
-model_2.add(keras.layers.Dense(64, activation="relu"))
-model_2.add(keras.layers.Dense(10, activation="softmax"))
+useFile = False
+
+if isfile("mnist_model.keras"):
+    useFile = input("Use saved model? (y/n)") == "y"
+
+model_2 = None
+
+if useFile:
+    model_2 = keras.models.load_model("mnist_model.keras")
+else:
+    model_2 = keras.Sequential()
+    model_2.add(
+        keras.layers.Conv2D(32, (3, 3), activation="relu", input_shape=(28, 28, 1))
+    )
+    model_2.add(keras.layers.MaxPooling2D((2, 2)))
+    model_2.add(keras.layers.Conv2D(64, (3, 3), activation="relu"))
+    model_2.add(keras.layers.MaxPooling2D((2, 2)))
+    model_2.add(keras.layers.Conv2D(64, (3, 3), activation="relu"))
+    model_2.add(keras.layers.Flatten())
+    model_2.add(keras.layers.Dense(64, activation="relu"))
+    model_2.add(keras.layers.Dense(10, activation="softmax"))
 
 model_2.compile(
     loss="sparse_categorical_crossentropy",
@@ -89,5 +101,6 @@ model_2.compile(
     metrics=["accuracy"],
 )
 
-model_2.fit(x_train, y_train, epochs=5)
+model_2.fit(x_train, y_train, epochs=5, batch_size=32)
 model_2.evaluate(x_test, y_test)
+model_2.save("mnist_model.keras")

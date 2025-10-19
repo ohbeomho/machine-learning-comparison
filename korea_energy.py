@@ -4,12 +4,13 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 import koreanize_matplotlib
 
-import pickle
-
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.preprocessing import StandardScaler
 
 import keras
+
+import os.path
 
 # 결측치 없음
 # 총 에너지 사용량만 사용
@@ -34,25 +35,43 @@ for i in range(2015, 2022):
 
 target_cols.pop()
 
-x_train = np.array(list(map(int, train_cols))).reshape(-1, 1)
+# 2000년 1월 -> 2000 + 1/12
+x_train = np.array(
+    list(map(float, map(lambda x: float(x[:4]) + float(x[4:]) / 12, train_cols)))
+).reshape(-1, 1)
 y_train = np.array(energy_data[train_cols])
-x_test = np.array(list(map(int, target_cols))).reshape(-1, 1)
+x_test = np.array(
+    list(map(float, map(lambda x: float(x[:4]) + float(x[4:]) / 12, target_cols)))
+).reshape(-1, 1)
 y_test = np.array(energy_data[target_cols])
+
+# 데이터 스케일링
+scaler = StandardScaler()
+x_train = scaler.fit_transform(x_train)
+x_test = scaler.transform(x_test)
 
 model_1 = LinearRegression()
 model_1.fit(x_train, y_train)
 
 y_pred_1 = model_1.predict(x_test)
-pickle.dump(model_1, open("korea_energy_model.pkl", "wb"))
 
-model_2 = keras.Sequential()
-model_2.add(keras.layers.Dense(64, activation="relu", input_shape=(1,)))
-model_2.add(keras.layers.Dense(64, activation="relu"))
-model_2.add(keras.layers.Dense(1))
+# 딥러닝은 학습 시간이 길기 때문에 저장된 파일이 있으면 사용할 지 물어보기
+useFile = False
+if os.path.isfile("korea_energy_model.keras"):
+    useFile = input("Use saved model? (y/n)") == "y"
 
-model_2.compile(loss="mse", optimizer="adam", metrics=["mse"])
+model_2 = None
 
-model_2.fit(x_train, y_train, epochs=5)
+if useFile:
+    model_2 = keras.models.load_model("korea_energy_model.keras")
+else:
+    model_2 = keras.Sequential()
+    model_2.add(keras.layers.Dense(64, activation="relu", input_shape=(1,)))
+    model_2.add(keras.layers.Dense(64, activation="relu"))
+    model_2.add(keras.layers.Dense(1))
+    model_2.compile(loss="mse", optimizer="adam", metrics=["mse"])
+
+model_2.fit(x_train, y_train, epochs=250, batch_size=3)
 y_pred_2 = model_2.predict(x_test)
 
 model_2.save("korea_energy_model.keras")

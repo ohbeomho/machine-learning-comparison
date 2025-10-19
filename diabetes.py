@@ -25,7 +25,6 @@ y = diabetes_data[target_col]
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
-import pickle
 
 # random_state를 지정하여 실행할 때마다 같은 결과가 나오도록 함
 x_train, x_test, y_train, y_test = train_test_split(
@@ -37,8 +36,6 @@ model_1 = KNeighborsClassifier(n_neighbors=5)
 model_1.fit(x_train, y_train)
 y_pred = model_1.predict(x_test)
 
-# pickle을 이용하여 모델 저장
-pickle.dump(model_1, open("diabetes_model.pkl", "wb"))
 
 print("Accuracy: ", accuracy_score(y_test, y_pred))
 
@@ -54,6 +51,3 @@ model_2.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy
 
 model_2.fit(x_train, y_train, epochs=5)
 model_2.evaluate(x_test, y_test)
-
-# 모델 저장
-model_2.save("diabetes_model.keras")
