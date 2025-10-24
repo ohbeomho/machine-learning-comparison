@@ -50,28 +50,29 @@ scaler = StandardScaler()
 x_train = scaler.fit_transform(x_train)
 x_test = scaler.transform(x_test)
 
+# --- 전통적인 머신러닝 ---
+
 model_1 = LinearRegression()
 model_1.fit(x_train, y_train)
 
 y_pred_1 = model_1.predict(x_test)
 
-# 딥러닝은 학습 시간이 길기 때문에 저장된 파일이 있으면 사용할 지 물어보기
+# --- 딥러닝 ---
+
 useFile = False
 if os.path.isfile("korea_energy_model.keras"):
-    useFile = input("Use saved model? (y/n)") == "y"
-
-model_2 = None
+    useFile = input("Use saved model? (y/n) ") == "y"
 
 if useFile:
     model_2 = keras.models.load_model("korea_energy_model.keras")
 else:
     model_2 = keras.Sequential()
-    model_2.add(keras.layers.Dense(64, activation="relu", input_shape=(1,)))
-    model_2.add(keras.layers.Dense(64, activation="relu"))
+    model_2.add(keras.layers.Dense(32, activation="relu", input_shape=(1,)))
+    model_2.add(keras.layers.Dense(32, activation="relu"))
     model_2.add(keras.layers.Dense(1))
     model_2.compile(loss="mse", optimizer="adam", metrics=["mse"])
 
-model_2.fit(x_train, y_train, epochs=250, batch_size=3)
+model_2.fit(x_train, y_train, epochs=250, batch_size=2)
 y_pred_2 = model_2.predict(x_test)
 
 model_2.save("korea_energy_model.keras")

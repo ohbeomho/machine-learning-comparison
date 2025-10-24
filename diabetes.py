@@ -21,7 +21,7 @@ diabetes_data = diabetes_data[diabetes_data["CholCheck"] >= 1]
 x = diabetes_data[data_cols]
 y = diabetes_data[target_col]
 
-# 전통적인 머신러닝
+# --- 전통적인 머신러닝 ---
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
@@ -37,17 +37,30 @@ model_1.fit(x_train, y_train)
 y_pred = model_1.predict(x_test)
 
 
-print("Accuracy: ", accuracy_score(y_test, y_pred))
-
-# 딥러닝
+# --- 딥러닝 ---
 import keras
+from os.path import isfile
 
-model_2 = keras.Sequential()
-model_2.add(keras.layers.Dense(64, activation="relu", input_shape=(6,)))
-model_2.add(keras.layers.Dense(64, activation="relu"))
-model_2.add(keras.layers.Dense(1, activation="sigmoid"))
+useFile = False
+
+if isfile("diabetes_model.keras"):
+    useFile = input("Use saved model? (y/n) ") == "y"
+
+if useFile:
+    model_2 = keras.models.load_model("diabetes_model.keras")
+else:
+    model_2 = keras.Sequential()
+    model_2.add(keras.layers.Dense(64, activation="relu", input_shape=(6,)))
+    model_2.add(keras.layers.Dense(64, activation="relu"))
+    model_2.add(keras.layers.Dense(1, activation="sigmoid"))
 
 model_2.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
 
 model_2.fit(x_train, y_train, epochs=5)
+model_2.save("diabetes_model.keras")
+
+# 모델 평가
+print("전통적인 머신러닝")
+print("Accuracy: ", accuracy_score(y_test, y_pred), "\n")
+print("딥러닝")
 model_2.evaluate(x_test, y_test)

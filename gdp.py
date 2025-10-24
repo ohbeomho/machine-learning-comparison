@@ -35,6 +35,8 @@ scaler = StandardScaler()
 x_train = scaler.fit_transform(x_train)
 x_test = scaler.transform(x_test)
 
+# --- 전통적인 머신러닝 ---
+
 # 2차식으로 선형회귀
 poly = PolynomialFeatures(degree=2)
 x_train_poly = poly.fit_transform(x_train)
@@ -45,22 +47,22 @@ model_1.fit(x_train_poly, y_train)
 
 y_pred_1 = model_1.predict(x_test_poly)
 
+# --- 딥러닝 ---
+
 useFile = False
 if os.path.isfile("gdp_model.keras"):
-    useFile = input("Use saved model? (y/n)") == "y"
-
-model_2 = None
+    useFile = input("Use saved model? (y/n) ") == "y"
 
 if useFile:
     model_2 = keras.models.load_model("gdp_model.keras")
 else:
     model_2 = keras.Sequential()
-    model_2.add(keras.layers.Dense(64, activation="relu", input_shape=(1,)))
-    model_2.add(keras.layers.Dense(64, activation="relu"))
+    model_2.add(keras.layers.Dense(32, activation="relu", input_shape=(1,)))
+    model_2.add(keras.layers.Dense(32, activation="relu"))
     model_2.add(keras.layers.Dense(1))
     model_2.compile(loss="mse", optimizer="adam", metrics=["mse"])
 
-model_2.fit(x_train, y_train, epochs=250, batch_size=1)
+model_2.fit(x_train, y_train, epochs=400, batch_size=1)
 
 y_pred_2 = model_2.predict(x_test)
 model_2.save("gdp_model.keras")

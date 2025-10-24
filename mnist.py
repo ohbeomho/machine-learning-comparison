@@ -78,8 +78,6 @@ useFile = False
 if isfile("mnist_model.keras"):
     useFile = input("Use saved model? (y/n)") == "y"
 
-model_2 = None
-
 if useFile:
     model_2 = keras.models.load_model("mnist_model.keras")
 else:
