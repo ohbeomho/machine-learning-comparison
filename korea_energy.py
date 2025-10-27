@@ -3,14 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 import koreanize_matplotlib
+from time import time
 
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.preprocessing import StandardScaler
 
 import keras
-
-import os.path
 
 # 결측치 없음
 # 총 에너지 사용량만 사용
@@ -51,31 +50,34 @@ x_train = scaler.fit_transform(x_train)
 x_test = scaler.transform(x_test)
 
 # --- 전통적인 머신러닝 ---
-
+print("전통적인 머신러닝 학습 시작")
 model_1 = LinearRegression()
-model_1.fit(x_train, y_train)
 
+start_time = time()
+model_1.fit(x_train, y_train)
+end_time = time()
+learning_time_1 = end_time - start_time
 y_pred_1 = model_1.predict(x_test)
 
 # --- 딥러닝 ---
 
-useFile = False
-if os.path.isfile("korea_energy_model.keras"):
-    useFile = input("Use saved model? (y/n) ") == "y"
+print("딥러닝 학습 시작")
+model_2 = keras.Sequential()
+model_2.add(keras.layers.Dense(32, activation="relu", input_shape=(1,)))
+model_2.add(keras.layers.Dense(32, activation="relu"))
+model_2.add(keras.layers.Dense(1))
+model_2.compile(loss="mse", optimizer="adam", metrics=["mse"])
 
-if useFile:
-    model_2 = keras.models.load_model("korea_energy_model.keras")
-else:
-    model_2 = keras.Sequential()
-    model_2.add(keras.layers.Dense(32, activation="relu", input_shape=(1,)))
-    model_2.add(keras.layers.Dense(32, activation="relu"))
-    model_2.add(keras.layers.Dense(1))
-    model_2.compile(loss="mse", optimizer="adam", metrics=["mse"])
-
+start_time = time()
 model_2.fit(x_train, y_train, epochs=250, batch_size=2)
-y_pred_2 = model_2.predict(x_test)
+end_time = time()
+learning_time_2 = end_time - start_time
 
+y_pred_2 = model_2.predict(x_test)
 model_2.save("korea_energy_model.keras")
+
+print("전통적인 머신러닝 학습 시간: %ds" % learning_time_1)
+print("딥러닝 모델 학습 시간: %ds" % learning_time_2)
 
 print("전통적인 머신러닝 모델 평가")
 print(

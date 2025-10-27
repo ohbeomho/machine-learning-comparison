@@ -1,4 +1,5 @@
 import pandas as pd
+from time import time
 
 # 결측치 없음
 diabetes_data = pd.read_csv(
@@ -33,33 +34,33 @@ x_train, x_test, y_train, y_test = train_test_split(
 
 # K를 5로 설정
 model_1 = KNeighborsClassifier(n_neighbors=5)
+
+start_time = time()
 model_1.fit(x_train, y_train)
-y_pred = model_1.predict(x_test)
+end_time = time()
+learning_time_1 = end_time - start_time
+y_pred = model_1.predict(x_test)  
 
 
 # --- 딥러닝 ---
 import keras
-from os.path import isfile
 
-useFile = False
-
-if isfile("diabetes_model.keras"):
-    useFile = input("Use saved model? (y/n) ") == "y"
-
-if useFile:
-    model_2 = keras.models.load_model("diabetes_model.keras")
-else:
-    model_2 = keras.Sequential()
-    model_2.add(keras.layers.Dense(64, activation="relu", input_shape=(6,)))
-    model_2.add(keras.layers.Dense(64, activation="relu"))
-    model_2.add(keras.layers.Dense(1, activation="sigmoid"))
+model_2 = keras.Sequential()
+model_2.add(keras.layers.Dense(64, activation="relu", input_shape=(6,)))
+model_2.add(keras.layers.Dense(64, activation="relu"))
+model_2.add(keras.layers.Dense(1, activation="sigmoid"))
 
 model_2.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
 
+start_time = time()
 model_2.fit(x_train, y_train, epochs=5)
+end_time = time()
+learning_time_2 = end_time - start_time
 model_2.save("diabetes_model.keras")
 
 # 모델 평가
+print("전통적인 머신러닝 학습 시간: %ds" % learning_time_1)
+print("딥러닝 모델 학습 시간: %ds" % learning_time_2)
 print("전통적인 머신러닝")
 print("Accuracy: ", accuracy_score(y_test, y_pred), "\n")
 print("딥러닝")

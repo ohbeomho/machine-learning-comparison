@@ -2,14 +2,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import koreanize_matplotlib
+from time import time
 
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 import keras
-
-import os.path
 
 gdp_data = pd.read_csv("./gdp/gdp.csv")
 
@@ -43,31 +42,32 @@ x_train_poly = poly.fit_transform(x_train)
 x_test_poly = poly.transform(x_test)
 
 model_1 = LinearRegression()
-model_1.fit(x_train_poly, y_train)
 
+start_time = time()
+model_1.fit(x_train_poly, y_train)
+end_time = time()
+learning_time_1 = end_time - start_time
 y_pred_1 = model_1.predict(x_test_poly)
 
 # --- 딥러닝 ---
 
-useFile = False
-if os.path.isfile("gdp_model.keras"):
-    useFile = input("Use saved model? (y/n) ") == "y"
+print("딥러닝 학습 시작")
+model_2 = keras.Sequential()
+model_2.add(keras.layers.Dense(32, activation="relu", input_shape=(1,)))
+model_2.add(keras.layers.Dense(32, activation="relu"))
+model_2.add(keras.layers.Dense(1))
+model_2.compile(loss="mse", optimizer="adam", metrics=["mse"])
 
-if useFile:
-    model_2 = keras.models.load_model("gdp_model.keras")
-else:
-    model_2 = keras.Sequential()
-    model_2.add(keras.layers.Dense(32, activation="relu", input_shape=(1,)))
-    model_2.add(keras.layers.Dense(32, activation="relu"))
-    model_2.add(keras.layers.Dense(1))
-    model_2.compile(loss="mse", optimizer="adam", metrics=["mse"])
-
+start_time = time()
 model_2.fit(x_train, y_train, epochs=400, batch_size=1)
+end_time = time()
+learning_time_2 = end_time - start_time
 
 y_pred_2 = model_2.predict(x_test)
 model_2.save("gdp_model.keras")
 
-# 모델 평가
+print("전통적인 머신러닝 학습 시간: %ds" % learning_time_1)
+print("딥러닝 모델 학습 시간: %ds" % learning_time_2)
 print("전통적인 머신러닝 평가")
 print("MSE: ", mean_squared_error(y_test.flatten(), y_pred_1))
 print(
