@@ -1,12 +1,9 @@
+from sys import implementation
 import numpy as np
 
 import struct
 from array import array
-from os.path import join, isfile
-
-import keras
-
-from sklearn.svm import LinearSVC
+from os.path import join
 
 from time import time
 
@@ -75,6 +72,7 @@ dataloader = MnistDataloader(
 
 
 # 전통적인 머신러닝
+from sklearn.svm import LinearSVC
 
 # SVM 모델로 학습하기 위해 2차원 배열로 변환
 x_train_flatten = x_train.reshape(-1, 28 * 28)
@@ -86,16 +84,13 @@ start_time = time()
 model_1.fit(x_train_flatten, y_train)
 end_time = time()
 
-print("SVM 모델 학습 시간: %ds" % (end_time - start_time))
-print("SVM 모델 머신러닝 정확도: ", model_1.score(x_test_flatten, y_test))
-
 
 # 딥러닝
+import keras
+
 print("딥러닝 학습 시작")
 model_2 = keras.Sequential()
-model_2.add(
-    keras.layers.Conv2D(32, (3, 3), activation="relu", input_shape=(28, 28, 1))
-)
+model_2.add(keras.layers.Conv2D(32, (3, 3), activation="relu", input_shape=(28, 28, 1)))
 model_2.add(keras.layers.MaxPooling2D((2, 2)))
 model_2.add(keras.layers.Conv2D(64, (3, 3), activation="relu"))
 model_2.add(keras.layers.MaxPooling2D((2, 2)))
@@ -111,8 +106,10 @@ model_2.compile(
 )
 
 start_time = time()
-model_2.fit(x_train, y_train, epochs=5, batch_size=32)
+model_2.fit(x_train, y_train, epochs=5, batch_size=32, verbose=0)
 end_time = time()
 
-print("딥러닝 모델 학습 시간: %ds" % (end_time - start_time))
+print("전통적인 머신러닝 모델 학습 시간: %ds" % (end_time - start_time))
+print("딥러닝 모델 학습 시간: %ds" % (end_time - start_time), "\n")
+print("전통적인 머신러닝 모델 정확도: ", model_1.score(x_test_flatten, y_test))
 print("딥러닝 모델 정확도: ", model_2.evaluate(x_test, y_test))

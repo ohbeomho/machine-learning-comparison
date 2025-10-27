@@ -3,7 +3,7 @@ from time import time
 
 # 결측치 없음
 diabetes_data = pd.read_csv(
-    "./diabetes/diabetes_binary_health_indicators_BRFSS2015.csv"
+    "./diabetes/diabetes_binary_5050split_health_indicators_BRFSS2015.csv"
 )
 target_col = "Diabetes_binary"  # 예측할 데이터
 data_cols = [
@@ -39,7 +39,7 @@ start_time = time()
 model_1.fit(x_train, y_train)
 end_time = time()
 learning_time_1 = end_time - start_time
-y_pred = model_1.predict(x_test)  
+y_pred = model_1.predict(x_test)
 
 
 # --- 딥러닝 ---
@@ -53,15 +53,17 @@ model_2.add(keras.layers.Dense(1, activation="sigmoid"))
 model_2.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
 
 start_time = time()
-model_2.fit(x_train, y_train, epochs=5)
+model_2.fit(x_train, y_train, epochs=5, verbose=0)
 end_time = time()
 learning_time_2 = end_time - start_time
 model_2.save("diabetes_model.keras")
 
 # 모델 평가
 print("전통적인 머신러닝 학습 시간: %ds" % learning_time_1)
-print("딥러닝 모델 학습 시간: %ds" % learning_time_2)
+print("딥러닝 모델 학습 시간: %ds" % learning_time_2, "\n")
 print("전통적인 머신러닝")
 print("Accuracy: ", accuracy_score(y_test, y_pred), "\n")
 print("딥러닝")
 model_2.evaluate(x_test, y_test)
+
+# TODO: 당뇨병 모델은 정확도보다 재현율이 중요 -> 재현율 확인
