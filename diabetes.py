@@ -25,7 +25,6 @@ y = diabetes_data[target_col]
 # --- 전통적인 머신러닝 ---
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score
 
 # random_state를 지정하여 실행할 때마다 같은 결과가 나오도록 함
 x_train, x_test, y_train, y_test = train_test_split(
@@ -43,14 +42,17 @@ y_pred = model_1.predict(x_test)
 
 
 # --- 딥러닝 ---
-import keras
+from keras.models import Sequential
+from keras.layers import Dense
 
-model_2 = keras.Sequential()
-model_2.add(keras.layers.Dense(64, activation="relu", input_shape=(6,)))
-model_2.add(keras.layers.Dense(64, activation="relu"))
-model_2.add(keras.layers.Dense(1, activation="sigmoid"))
+model_2 = Sequential()
+model_2.add(Dense(64, activation="relu", input_shape=(6,)))
+model_2.add(Dense(64, activation="relu"))
+model_2.add(Dense(1, activation="sigmoid"))
 
-model_2.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
+model_2.compile(
+    loss="binary_crossentropy", optimizer="adam", metrics=["accuracy", "recall"]
+)
 
 start_time = time()
 model_2.fit(x_train, y_train, epochs=5, verbose=0)
@@ -58,12 +60,19 @@ end_time = time()
 learning_time_2 = end_time - start_time
 model_2.save("diabetes_model.keras")
 
+from sklearn.metrics import accuracy_score, recall_score
+
 # 모델 평가
 print("전통적인 머신러닝 학습 시간: %ds" % learning_time_1)
 print("딥러닝 모델 학습 시간: %ds" % learning_time_2, "\n")
 print("전통적인 머신러닝")
-print("Accuracy: ", accuracy_score(y_test, y_pred), "\n")
+print("정확도: %.4f%%" % (accuracy_score(y_test, y_pred) * 100))
+print(
+    "재현율: %.4f%%" % (recall_score(y_test, y_pred) * 100),
+)
+print()
 print("딥러닝")
-model_2.evaluate(x_test, y_test)
-
-# TODO: 당뇨병 모델은 정확도보다 재현율이 중요 -> 재현율 확인
+print("정확도: %.4f%%" % (model_2.evaluate(x_test, y_test, verbose=0)[1] * 100))
+print(
+    "재현율: %.4f%%" % (model_2.evaluate(x_test, y_test, verbose=0)[2] * 100),
+)
