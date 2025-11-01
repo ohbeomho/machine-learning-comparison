@@ -53,21 +53,21 @@ from keras.layers import Dense
 from keras.callbacks import EarlyStopping
 
 model_2 = Sequential()
-model_2.add(Dense(32, activation="relu", input_shape=(1,)))
+model_2.add(Dense(32, activation="relu", input_dim=1))
 model_2.add(Dense(16, activation="relu"))
 model_2.add(Dense(1))
 model_2.compile(loss="mse", optimizer="adam", metrics=["mse"])
 
 early_stop = EarlyStopping(
-    monitor="loss", patience=10, verbose=0, restore_best_weights=True
+    monitor="loss", patience=10, verbose=1, restore_best_weights=True
 )
 
 start_time = time()
-model_2.fit(x, y, epochs=400, batch_size=5, callbacks=[early_stop], verbose=0)
+model_2.fit(x, y, epochs=400, batch_size=5, callbacks=[early_stop], verbose=1)
 end_time = time()
 learning_time_2 = end_time - start_time
 
-y_pred_2 = model_2.predict(x)
+y_pred_2 = model_2.predict(x, verbose=0)
 
 print("전통적인 머신러닝 학습 시간: %ds" % learning_time_1)
 print("MSE: ", mean_squared_error(y, y_pred_1))

@@ -38,15 +38,15 @@ start_time = time()
 model_1.fit(x_train, y_train)
 end_time = time()
 learning_time_1 = end_time - start_time
-y_pred = model_1.predict(x_test)
 
+y_pred = model_1.predict(x_test)
 
 # --- 딥러닝 ---
 from keras.models import Sequential
 from keras.layers import Dense
 
 model_2 = Sequential()
-model_2.add(Dense(64, activation="relu", input_shape=(6,)))
+model_2.add(Dense(64, activation="relu", input_dim=6))
 model_2.add(Dense(64, activation="relu"))
 model_2.add(Dense(1, activation="sigmoid"))
 
@@ -55,10 +55,11 @@ model_2.compile(
 )
 
 start_time = time()
-model_2.fit(x_train, y_train, epochs=5, verbose=0)
+model_2.fit(x_train, y_train, epochs=5, verbose=1)
 end_time = time()
 learning_time_2 = end_time - start_time
-model_2.save("diabetes_model.keras")
+
+model_2_eval = model_2.evaluate(x_test, y_test, verbose=0)
 
 from sklearn.metrics import accuracy_score, recall_score
 
@@ -72,7 +73,7 @@ print(
 )
 print()
 print("딥러닝")
-print("정확도: %.4f%%" % (model_2.evaluate(x_test, y_test, verbose=0)[1] * 100))
+print("정확도: %.4f%%" % (model_2_eval[1] * 100))
 print(
-    "재현율: %.4f%%" % (model_2.evaluate(x_test, y_test, verbose=0)[2] * 100),
+    "재현율: %.4f%%" % (model_2_eval[2] * 100),
 )
