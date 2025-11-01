@@ -1,4 +1,3 @@
-from sys import implementation
 import numpy as np
 
 import struct
@@ -70,28 +69,34 @@ dataloader = MnistDataloader(
 )
 (x_train, y_train), (x_test, y_test) = dataloader.load_data()
 
-
 # 전통적인 머신러닝
-from sklearn.svm import LinearSVC
+from sklearn.linear_model import LogisticRegression
 
-# SVM 모델로 학습하기 위해 2차원 배열로 변환
+# 2차원 배열로 변환
 x_train_flatten = x_train.reshape(-1, 28 * 28)
 x_test_flatten = x_test.reshape(-1, 28 * 28)
 
-model_1 = LinearSVC()
+model_1 = LogisticRegression()
 
 start_time = time()
 model_1.fit(x_train_flatten, y_train)
 end_time = time()
+learning_time_1 = end_time - start_time
 
+y_pred = model_1.predict(x_test_flatten)
 
 # 딥러닝
 from keras.models import Sequential
-from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
+from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, Input
+from keras.utils import to_categorical
 
-print("딥러닝 학습 시작")
+# One-Hot 인코딩
+y_train_encoded = to_categorical(y_train, 10)
+y_test_encoded = to_categorical(y_test, 10)
+
 model_2 = Sequential()
-model_2.add(Conv2D(32, (3, 3), activation="relu", input_shape=(28, 28, 1)))
+model_2.add(Input(shape=(28, 28, 1)))
+model_2.add(Conv2D(32, (3, 3), activation="relu"))
 model_2.add(MaxPooling2D((2, 2)))
 model_2.add(Conv2D(64, (3, 3), activation="relu"))
 model_2.add(MaxPooling2D((2, 2)))
@@ -107,10 +112,17 @@ model_2.compile(
 )
 
 start_time = time()
-model_2.fit(x_train, y_train, epochs=5, batch_size=32, verbose=0)
+model_2.fit(x_train, y_train_encoded, epochs=5, batch_size=32, verbose=1)
 end_time = time()
+learning_time_2 = end_time - start_time
 
-print("전통적인 머신러닝 모델 학습 시간: %ds" % (end_time - start_time))
-print("딥러닝 모델 학습 시간: %ds" % (end_time - start_time), "\n")
-print("전통적인 머신러닝 모델 정확도: ", model_1.score(x_test_flatten, y_test))
-print("딥러닝 모델 정확도: ", model_2.evaluate(x_test, y_test))
+# 모델 평가
+from sklearn.metrics import accuracy_score
+
+print("전통적인 머신러닝 모델 학습 시간: %ds" % learning_time_1)
+print("딥러닝 모델 학습 시간: %ds" % learning_time_2, "\n")
+print("전통적인 머신러닝 모델 정확도: %.4f%%" % (accuracy_score(y_test, y_pred) * 100))
+print(
+    "딥러닝 모델 정확도: %.4f%%"
+    % (model_2.evaluate(x_test, y_test_encoded, verbose=0)[1] * 100)
+)
