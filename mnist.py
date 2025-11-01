@@ -86,21 +86,22 @@ end_time = time()
 
 
 # 딥러닝
-import keras
+from keras.models import Sequential
+from keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
 
 print("딥러닝 학습 시작")
-model_2 = keras.Sequential()
-model_2.add(keras.layers.Conv2D(32, (3, 3), activation="relu", input_shape=(28, 28, 1)))
-model_2.add(keras.layers.MaxPooling2D((2, 2)))
-model_2.add(keras.layers.Conv2D(64, (3, 3), activation="relu"))
-model_2.add(keras.layers.MaxPooling2D((2, 2)))
-model_2.add(keras.layers.Conv2D(64, (3, 3), activation="relu"))
-model_2.add(keras.layers.Flatten())
-model_2.add(keras.layers.Dense(64, activation="relu"))
-model_2.add(keras.layers.Dense(10, activation="softmax"))
+model_2 = Sequential()
+model_2.add(Conv2D(32, (3, 3), activation="relu", input_shape=(28, 28, 1)))
+model_2.add(MaxPooling2D((2, 2)))
+model_2.add(Conv2D(64, (3, 3), activation="relu"))
+model_2.add(MaxPooling2D((2, 2)))
+model_2.add(Conv2D(64, (3, 3), activation="relu"))
+model_2.add(Flatten())
+model_2.add(Dense(64, activation="relu"))
+model_2.add(Dense(10, activation="softmax"))
 
 model_2.compile(
-    loss="sparse_categorical_crossentropy",
+    loss="categorical_crossentropy",
     optimizer="adam",
     metrics=["accuracy"],
 )
