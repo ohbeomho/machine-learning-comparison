@@ -1,10 +1,17 @@
 import pandas as pd
+
 from time import time
 
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+
+from keras.models import Sequential
+from keras.layers import Dense, Input
+
+from sklearn.metrics import accuracy_score, recall_score
+
 # 결측치 없음
-diabetes_data = pd.read_csv(
-    "./diabetes/diabetes_binary_5050split_health_indicators_BRFSS2015.csv"
-)
+diabetes_data = pd.read_csv("diabetes_binary_5050split_health_indicators_BRFSS2015.csv")
 target_col = "Diabetes_binary"  # 예측할 데이터
 data_cols = [
     "HighBP",
@@ -22,10 +29,7 @@ diabetes_data = diabetes_data[diabetes_data["CholCheck"] >= 1]
 x = diabetes_data[data_cols]
 y = diabetes_data[target_col]
 
-# --- 전통적인 머신러닝 ---
-from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier
-
+# 전통적인 머신러닝
 # random_state를 지정하여 실행할 때마다 같은 결과가 나오도록 함
 x_train, x_test, y_train, y_test = train_test_split(
     x, y, test_size=0.3, random_state=42
@@ -41,13 +45,11 @@ learning_time_1 = end_time - start_time
 
 y_pred = model_1.predict(x_test)
 
-# --- 딥러닝 ---
-from keras.models import Sequential
-from keras.layers import Dense
-
+# 딥러닝
 model_2 = Sequential()
-model_2.add(Dense(64, activation="relu", input_dim=6))
-model_2.add(Dense(64, activation="relu"))
+model_2.add(Input(shape=(6,)))
+model_2.add(Dense(32, activation="relu"))
+model_2.add(Dense(16, activation="relu"))
 model_2.add(Dense(1, activation="sigmoid"))
 
 model_2.compile(
@@ -60,8 +62,6 @@ end_time = time()
 learning_time_2 = end_time - start_time
 
 model_2_eval = model_2.evaluate(x_test, y_test, verbose=0)
-
-from sklearn.metrics import accuracy_score, recall_score
 
 # 모델 평가
 print("전통적인 머신러닝 학습 시간: %ds" % learning_time_1)

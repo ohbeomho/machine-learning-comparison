@@ -6,9 +6,17 @@ import koreanize_matplotlib
 
 from time import time
 
-energy_data = pd.read_csv("./energy_consumption/COMED_hourly.csv")
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.preprocessing import PolynomialFeatures
+
+from keras.models import Sequential
+from keras.layers import Dense, Input
+from keras.callbacks import EarlyStopping
+
+energy_data = pd.read_csv("COMED_hourly.csv")
 energy_data["Datetime"] = pd.to_datetime(energy_data["Datetime"])
-# 온도 데이터에 맞추기
+# 온도 데이터에 범위 맞추기
 energy_data = energy_data[
     (energy_data["Datetime"] >= pd.to_datetime("2012-10-01"))
     & (energy_data["Datetime"] <= pd.to_datetime("2017-11-30"))
@@ -17,7 +25,7 @@ energy_data = energy_data.resample("D", on="Datetime").mean()
 y = np.array(energy_data["COMED_MW"])
 
 # 온도 단위: 켈빈(K)
-temp_data = pd.read_csv("./energy_consumption/temperature.csv")
+temp_data = pd.read_csv("temperature.csv")
 temp_data["datetime"] = pd.to_datetime(temp_data["datetime"])
 temp_data = temp_data.resample("D", on="datetime").mean()
 x = np.array(temp_data["Chicago"])
@@ -25,16 +33,7 @@ x = np.array(temp_data["Chicago"])
 x -= 273.15
 x = x.reshape(-1, 1)
 
-from sklearn.preprocessing import StandardScaler
-
-scaler = StandardScaler()
-scaler.fit_transform(x)
-
 # 전통적인 머신러닝
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from sklearn.preprocessing import PolynomialFeatures
-
 poly = PolynomialFeatures(degree=3)
 x_poly = poly.fit_transform(x)
 
@@ -48,16 +47,14 @@ learning_time_1 = end_time - start_time
 y_pred_1 = model_1.predict(x_poly)
 
 # 딥러닝
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.callbacks import EarlyStopping
-
 model_2 = Sequential()
-model_2.add(Dense(32, activation="relu", input_dim=1))
+model_2.add(Input(shape=(1,)))
+model_2.add(Dense(32, activation="relu"))
 model_2.add(Dense(16, activation="relu"))
 model_2.add(Dense(1))
 model_2.compile(loss="mse", optimizer="adam", metrics=["mse"])
 
+# 10번 동안 손실에 큰 변화가 없으면 학습 중단
 early_stop = EarlyStopping(
     monitor="loss", patience=10, verbose=1, restore_best_weights=True
 )
